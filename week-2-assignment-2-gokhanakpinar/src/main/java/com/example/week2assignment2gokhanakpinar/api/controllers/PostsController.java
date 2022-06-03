@@ -1,63 +1,52 @@
 package com.example.week2assignment2gokhanakpinar.api.controllers;
 
-import com.example.week2assignment2gokhanakpinar.dataAccess.PostDao;
+import com.example.week2assignment2gokhanakpinar.business.PostService;
+import com.example.week2assignment2gokhanakpinar.core.utilities.results.DataResult;
+import com.example.week2assignment2gokhanakpinar.core.utilities.results.Result;
 import com.example.week2assignment2gokhanakpinar.entity.Post;
 import com.example.week2assignment2gokhanakpinar.enums.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/posts")
 public class PostsController {
-    private PostDao postDao;
+    private PostService postService;
 
     @Autowired
-    public PostsController(PostDao postDao) {
-        this.postDao = postDao;
-    }
-
-
-    @GetMapping("/getbyid")
-    public Optional<Post> getPost(@RequestParam int id){
-        return this.postDao.findById(id);
+    public PostsController(PostService postService) {
+        this.postService = postService;
     }
 
     @PostMapping("/add")
-    Post createPost(@RequestBody Post post){
-        return this.postDao.save(post);
+    public Result createPost(@RequestBody Post post){
+        return this.postService.createPost(post);
+    }
+
+    @GetMapping("getById")
+    public DataResult<Post> getPostById(int id){
+        return this.postService.getPostById(id);
     }
 
     @PutMapping("/update")
-    Optional<Post> updatePost(@RequestBody Post post,@RequestParam int id, String user){
-        return postDao.findById(id).map(p -> {
-            p.setAuthor(post.getAuthor());
-            p.setCategory(post.getCategory());
-            p.setUpdatedAt(LocalDateTime.now());
-            p.setUpdatedBy(user);
-            p.setText(post.getText());
-            p.setTitle(post.getTitle());
-            return postDao.save(p);
-        });
+    public Result update(@RequestBody Post post, @RequestParam int id, @RequestParam String user){
+        return this.postService.update(post, id, user);
     }
 
-    @GetMapping("/author")
-    public List<Post> findPostByAuthor(@RequestParam String author){
-        return this.postDao.findPostsByAuthor(author);
+    @GetMapping("/getByAuthor")
+    public DataResult<List<Post>> findPostsByAuthor(String author){
+        return this.postService.findPostsByAuthor(author);
     }
 
-    @GetMapping("/category")
-    public List<Post> findPostsByCategory(@RequestParam Category category){
-        return this.postDao.findPostsByCategory(category);
+    @GetMapping("/getByCategory")
+    public DataResult<List<Post>> findPostsByCategory(Category category){
+        return this.postService.findPostsByCategory(category);
     }
 
-    @GetMapping("/findtop3")
-    public List<Post> findFirst3ByOrderByCreatedAtDesc(){
-        return this.postDao.findFirst3ByOrderByCreatedAtDesc();
+    @GetMapping("/getTop3")
+    public DataResult<List<Post>> findFirst3ByOrderByCreatedAtDesc(){
+        return this.postService.findFirst3ByOrderByCreatedAtDesc();
     }
-
-
 }
